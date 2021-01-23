@@ -1,0 +1,146 @@
+
+#Proceso desarrollado en R packages
+
+#Convertir las coordenadas geográficas a UTM,  
+#utilizando el método de Coticchia - Surace.
+
+#Datos de coordenadas geográficas
+# longitud (73° 7'24.97"O) 
+# Latitud (  7° 6'18.42"N)
+
+#Datos de semieje mayor y semieje menor
+# WGS84
+
+#semiejemayor(a) = 6378137
+#semiejemenor(b) = 6356752.3142
+a <- (6378137)
+a
+b <- (6356752.31424)
+b
+
+# Hallando la excentricidad
+excentr <- (((a)^2-(b)^2)^0.5/b)
+excentr
+
+# Hallando excentricidad al cuadrado
+e <-(excentr)^2
+e
+
+# Hallando radio polar de la  curvatura
+c <- (((a)^2)/b)
+c
+
+# Hallando el aplanamiento
+aplan <- (a-b)/(a)
+aplan
+
+# Conversión de latitud y longitud en radianes
+# Longitud (73° 7'24.97"O) 
+# Latitud (  7° 6'18.42"N)
+
+long <- (73+(7/60)+((24.97)/3600))
+long
+lat <- (7+(6/60)+(18.42/3600))
+lat
+
+#Conversión de latitud y longitud en radianes
+longr <- long*(pi/180)
+longr
+latr <- lat*(pi/180)
+latr
+
+# Cálculo de los signos latitud y longitud.
+#valores positivos longitud cuando se escribe como este "E" "(+)"
+#Latitud norte, tiene valor positivo, "N" es "(+)"
+
+# Valores negativos longitud oeste "O" es (-)
+#                      Latitud Sur "S" es (-)
+
+signlong <-(long*(-1))
+signlong
+signlat <-(lat*(1))
+signlat
+
+# Cálculo del huso 
+
+huso <- ((signlong/6)+31)
+huso
+
+# Hallando el meridiano central del huso, se usa el valor entero del uso.
+# poner el valor entrro del huso.
+lamda1 <- ((18*6)-183)
+lamda1
+
+# Distancia angular entre la longitud de un punto y el meridiano.
+# Se pone signo negativo por la ubicación de la longitud en radianes
+distang <- (-longr - (lamda1*(pi/180)))
+distang
+
+# Cálculo de los parametros de la ecuación de Coticchia-Surace
+#
+A <- (cos(latr)*sin(distang))
+A
+
+#
+Xi <- (0.5*log((1+A)/(1-A)))
+Xi
+
+#
+eta <- (atan((tan(latr))/(cos(distang)))-latr)
+eta
+
+#
+nu <-((c)/(1+e*(cos(latr)^2))^0.5*0.9996)
+nu
+
+# Donde 0.9996 es un valor de factor.
+zeta <- (e/2)*Xi^2*(cos(latr))^2
+zeta
+#
+A1 <-sin(2*latr)
+A1
+#
+A2 <- A1*(cos(latr))^2
+A2
+#
+j2 <- (latr + (A1/2))
+j2
+#
+j4 <- ((3*j2+A2)/4)
+j4
+#
+j6 <- ((5*j4+A2*(cos(latr))^2)/3)
+j6
+#
+alfa <-((3/4)*e)
+alfa
+#
+beta <-((5/3)*(alfa)^2)
+beta
+#
+gama <- ((35/27)*(alfa)^3)
+gama
+#
+Bo <-(0.9996*c*(latr-(alfa*j2)+(beta*j4)-(gama*j6)))
+Bo
+
+# Hallando  los valores de las coordendas
+X <- ((Xi*nu*(1+(zeta/3))) +500000)
+X
+
+Y <- (eta*nu*(1+zeta))+Bo
+Y
+
+#Hallando la diferencia de valores con los valores de Google Earth
+Xg <- 707239.43 
+Yg <- 785789.03 
+
+dX <- abs(X-Xg)
+dX
+#
+dy <- abs(Y-Yg)
+dy
+
+# Hallando el error de la distancia absoluta.
+Error <- (((dX)^2+(dy)^2)^0.5)*1.7308
+Error
